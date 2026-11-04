@@ -3,11 +3,11 @@ import numpy as np
 from matplotlib import pyplot as plt 
 
 
-def tresholding_noise_removal(img,
+def thresholding_noise_removal(img,
                               blocksize=61, c=10,
                               kernel_dilate=cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3)),
                               kernel_opening=np.ones((5,5), dtype=np.uint8),
-                              MIN_AREA=7000, MAX_AREA=10000000):
+                              MIN_AREA=1000, MAX_AREA=10000000):
     """
     Applique un pipeline de traitement d'image pour extraire une ligne claire (ou foncée inversée) 
     de son environnement en s'adaptant aux variations de luminosité et en éliminant le bruit.
@@ -47,7 +47,7 @@ def tresholding_noise_removal(img,
     #   à l'épaisseur de la ligne pour ne pas créer un trou
     # - C correspond à la contrainte soustraite au seuil trouvé par la moyenne gaussienne, 
     #   c'est ce qui permet d'éviter que les zones sans lignes soient considérées comme des lignes 
-    img_treshold = cv2.adaptiveThreshold(
+    img_threshold = cv2.adaptiveThreshold(
         img, 255, 
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
         cv2.THRESH_BINARY_INV, 
@@ -55,7 +55,7 @@ def tresholding_noise_removal(img,
     )
 
     # L'ouverture (MORPH_OPEN) va supprimer les petites zones blanches du bruit (Ouverture = erosion puis dilation)
-    img_morpho = cv2.morphologyEx(img_treshold, cv2.MORPH_OPEN, kernel_opening)
+    img_morpho = cv2.morphologyEx(img_threshold, cv2.MORPH_OPEN, kernel_opening)
 
     # La dilatation (MORPH_DILATE) permet de combler les éventuels trous dans la ligne 
     # (même s'ils devraient déjà être rattrapés par l'ouverture)
@@ -97,11 +97,11 @@ def tresholding_noise_removal(img,
 DIRECTORY_SRC = "vision/src_img_piste"
 DIRECTORY_DEST = "vision/dest_img_piste"
 
-FILE_NAME = 'piste'
+FILE_NAME = 'test_webcam'
 
 img = cv2.imread(f"{DIRECTORY_SRC}/{FILE_NAME}.jpg", cv2.IMREAD_GRAYSCALE)
 
-img_cleaned = tresholding_noise_removal(img)
+img_cleaned = thresholding_noise_removal(img, MIN_AREA=1000)
 
 cv2.imwrite(f"{DIRECTORY_DEST}/{FILE_NAME}_filtered.jpg", img_cleaned)
 
