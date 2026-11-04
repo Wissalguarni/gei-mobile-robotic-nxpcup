@@ -93,18 +93,3 @@ def thresholding_noise_removal(img,
     cv2.drawContours(image_cleaned, borders_filtered, -1, 255, thickness=cv2.FILLED)
 
     return image_cleaned
-
-DIRECTORY_SRC = "vision/src_img_piste"
-DIRECTORY_DEST = "vision/dest_img_piste"
-
-FILE_NAME = 'test_webcam'
-
-img = cv2.imread(f"{DIRECTORY_SRC}/{FILE_NAME}.jpg", cv2.IMREAD_GRAYSCALE)
-
-img_cleaned = thresholding_noise_removal(img, MIN_AREA=1000)
-
-cv2.imwrite(f"{DIRECTORY_DEST}/{FILE_NAME}_filtered.jpg", img_cleaned)
-
-plt.imshow(img_cleaned, cmap='gray')
-plt.axis('off')
-plt.show()
