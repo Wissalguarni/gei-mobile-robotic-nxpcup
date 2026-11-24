@@ -120,7 +120,8 @@ def parse_report(data):
                     + [n for m, n in BTN_3 if b3 & m]),
     }
 
-MAX_SPEED_MOTOR = 70
+MAX_SPEED_MOTOR = 60
+REACTIVITY_MOTOR = 5
 MAX_DIRECTION = 85
 
 
@@ -266,6 +267,12 @@ def read_loop(ctrl_fd, intr_fd, board):
         cmd = (power, direction)
         if cmd != last_sent and (cmd == (0, 0) or now - last_cmd_time >= CMD_PERIOD):
             try:
+                (last_power, last_direction) = last_sent
+                if last_power < power:
+                    power = last_power + min(REACTIVITY_MOTOR, power-last_power)
+                else:
+                    power = last_power - min(REACTIVITY_MOTOR, last_power-power)
+
                 board.set_motors_and_direction(power, power, direction)
                 last_sent = cmd
                 last_cmd_time = now
