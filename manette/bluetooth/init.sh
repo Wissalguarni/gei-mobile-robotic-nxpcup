@@ -12,13 +12,10 @@ ps -ef | grep bluetoothd
 sleep 2
 
 btmgmt pairable on
-bluetoothctl --timeout 8 scan on
 
 bluetoothctl << EOF
 agent on
 default-agent
-pair $MAC
-trust $MAC
 quit
 EOF
 
