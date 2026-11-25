@@ -271,9 +271,9 @@ def read_loop(ctrl_fd, intr_fd, board):
             try:
                 (last_power, _) = last_sent
                 if last_power < power:
-                    power = last_power + min(REACTIVITY_MOTOR*interval_duration, power-last_power)
+                    power = last_power + min(int(REACTIVITY_MOTOR*interval_duration), power-last_power)
                 else:
-                    power = last_power - min(REACTIVITY_MOTOR*interval_duration, last_power-power)
+                    power = last_power - min(int(REACTIVITY_MOTOR*interval_duration), last_power-power)
 
                 board.set_motors_and_direction(power, power, direction)
                 last_sent = cmd
