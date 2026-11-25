@@ -214,7 +214,7 @@ def read_loop(ctrl_fd, intr_fd, board):
     """Lit la DS4 et pilote la carte MCX en continu. Retourne la raison de la sortie."""
     last_print = 0.0
     last_cmd_time = 0.0
-    last_sent = None
+    last_sent = (0, 0)
     first = True
     unknown = set()
 
