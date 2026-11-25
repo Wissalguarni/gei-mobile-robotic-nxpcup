@@ -22,3 +22,4 @@ quit
 EOF
 
 btmgmt connectable on 
+btmgmt fast-conn on

@@ -21,7 +21,7 @@ from mcx_i2c import MCXBoard, MCXBoardError
 I2C_BUS = 2
 STICK_DEADZONE = 6        # zone morte autour de 128 (~5 %) pour éviter le tremblement servo
 TRIGGER_DEADZONE = 3      # seuil minimal R2 avant démarrage moteurs
-CMD_PERIOD = 0.02         # envoi I2C max toutes les 20 ms (50 Hz)
+CMD_PERIOD = 0.04         # envoi I2C max toutes les 20 ms (50 Hz)
 
 # Configuration Bluetooth L2CAP
 PSM_CTRL = 0x11           # HID control
@@ -120,9 +120,10 @@ def parse_report(data):
                     + [n for m, n in BTN_3 if b3 & m]),
     }
 
-MAX_SPEED_MOTOR = 60
-REACTIVITY_MOTOR = 5
-MAX_DIRECTION = 85
+MAX_SPEED_MOTOR = 70 # in 0-100
+REACTIVITY_MOTOR = 25 # in % / sec
+MAX_DIRECTION = 85 # in 0-100
+OFFSET_DIRECTION = -5 # to shift the origin wheels alignement
 
 
 def compute_controls(state):
@@ -140,8 +141,8 @@ def compute_controls(state):
     if abs(dx) <= STICK_DEADZONE:
         direction = 0
     else:
-        direction = round((dx / 127.0) * MAX_DIRECTION)
-        direction = -max(-MAX_DIRECTION, min(MAX_DIRECTION, direction))
+        direction = round((dx / 127.0) * MAX_DIRECTION) + OFFSET_DIRECTION
+        direction = -max(-100, min(100, direction))
 
     return power, direction
 
@@ -265,13 +266,14 @@ def read_loop(ctrl_fd, intr_fd, board):
 
         # Envoi I2C si les valeurs changent (immédiat si arrêt demandé, sinon max 50 Hz)
         cmd = (power, direction)
-        if cmd != last_sent and (cmd == (0, 0) or now - last_cmd_time >= CMD_PERIOD):
+        interval_duration = now - last_cmd_time
+        if cmd != last_sent and (cmd == (0, 0) or interval_duration >= CMD_PERIOD):
             try:
-                (last_power, last_direction) = last_sent
+                (last_power, _) = last_sent
                 if last_power < power:
-                    power = last_power + min(REACTIVITY_MOTOR, power-last_power)
+                    power = last_power + min(REACTIVITY_MOTOR*interval_duration, power-last_power)
                 else:
-                    power = last_power - min(REACTIVITY_MOTOR, last_power-power)
+                    power = last_power - min(REACTIVITY_MOTOR*interval_duration, last_power-power)
 
                 board.set_motors_and_direction(power, power, direction)
                 last_sent = cmd
