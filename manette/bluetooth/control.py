@@ -121,7 +121,8 @@ def parse_report(data):
     }
 
 MAX_SPEED_MOTOR = 70 # in 0-100
-REACTIVITY_MOTOR = 25 # in % / sec
+ACCELERATION_MOTOR = 25 # in % / sec
+DECELERATION_MOTOR = 25 # in % / sec
 MAX_DIRECTION = 85 # in 0-100
 OFFSET_DIRECTION = -5 # to shift the origin wheels alignement
 
@@ -271,9 +272,9 @@ def read_loop(ctrl_fd, intr_fd, board):
             try:
                 (last_power, _) = last_sent
                 if last_power < power:
-                    power = last_power + min(int(REACTIVITY_MOTOR*interval_duration), power-last_power)
+                    power = last_power + min(int(ACCELERATION_MOTOR*interval_duration), power-last_power)
                 else:
-                    power = last_power - min(int(REACTIVITY_MOTOR*interval_duration), last_power-power)
+                    power = last_power - min(int(DECELERATION_MOTOR*interval_duration), last_power-power)
 
                 board.set_motors_and_direction(power, power, direction)
                 last_sent = cmd
